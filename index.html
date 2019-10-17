@@ -160,20 +160,22 @@
 	  	{
 		  if(renderstat.r>0){return}
 		  renderstat.tv+=renderstat.ts
-		  var i = 0, j = 0, k = 0, idx;
+		  var i,j,k,l,idx;i=j=k=l=0;
 		  var m = renderstat.m;
 		  var t = renderstat.tv;
 		  var d = sct.data, e = scr.data;
 		  var w = sct.width, h = sct.height;
 		  for(var y=0;y<h;y++){
-		  	for(var x=0;x<w;x++){
+		  	for(var x=0;x<w;x++){l=1;
 				j=parseInt(x+(x/2+m.x/2-x)*t)
 				k=parseInt(y+(y/2+m.y/2-y)*t)
-		  		idx=(j%w)*4+(k%h)*4*w;
+				j=j<0?(l=0.5,0):j;j=j<w-1?j:(l=0.5,w-1);
+				k=k<0?(l=0.5,0):k;k=k<h-1?k:(l=0.5,h-1);
+		  		idx=j*4+k*4*w;
 		  		d[i++]=e[idx+0];
 		  		d[i++]=e[idx+1];
 		  		d[i++]=e[idx+2];
-		  		d[i++]=e[idx+3];
+		  		d[i++]=e[idx+3]*l;
 		  	}
 		  }
 		  if(renderstat.tv==renderstat.tf){
