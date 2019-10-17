@@ -148,41 +148,54 @@
 	  
 	  var setvalue =_=>0
 	  
-	  var applytcanv=_=>{
-	    var d = sct.data, e = scr.data;
+	  var applytcanv=(_,$)=>{
+	    var d = _.data, e = $.data;
 	    for(var i=0,j=e.length;i<j;){
 	      e[i]=d[i++];e[i]=d[i++];e[i]=d[i++];e[i]=d[i++]
 	    }
 	  }
 	  
-	  var aftertransition =_=>(applytcanv(),updateparam(),draw())
+	  var aftertransition =_=>{
+		var m = renderstat.m;
+		var t = 2**renderstat.tv;
+		var i,j,k,l,idx;i=j=k=l=0;
+	    var d = sct.data, e = scr.data;
+		var w = sct.width, h = sct.height;
+		sct=null; sct=ctx.getImageData(0,0,w,h)
+		//for(var y=0;y<h;y++){
+		//  for(var x=0;x<w;x++){l=1;
+		//	j=parseInt(0.5+x+(x/2+m.x/2-x)/(t-1))
+		//	k=parseInt(0.5+y+(y/2+m.y/2-y)/(t-1))
+		//	j=j<0?(l=0.5,0):j;j=j<w-1?j:(l=0.5,w-1);
+		//	k=k<0?(l=0.5,0):k;k=k<h-1?k:(l=0.5,h-1);
+		//  	idx=j*4+k*4*w;
+		//  	d[i++]=e[idx+0];
+		//  	d[i++]=e[idx+1];
+		//  	d[i++]=e[idx+2];
+		//  	d[i++]=e[idx+3]*l;
+		//  }
+		//}
+		applytcanv(sct,scr);
+		updateparam();
+		draw();
+	  }
 	  var transition=_=>
 	  	{
-		  if(renderstat.r>0){return}
+		  if(renderstat.r> 0){ return }
+		  if(renderstat.r<-1){
+		    ctx.setTransform(1, 0, 0, 1, 0, 0);
+		    renderstat.tc(); return }
 		  renderstat.tv+=renderstat.ts
-		  var i,j,k,l,idx;i=j=k=l=0;
 		  var m = renderstat.m;
 		  var t = renderstat.tv;
-		  var d = sct.data, e = scr.data;
-		  var w = sct.width, h = sct.height;
-		  for(var y=0;y<h;y++){
-		  	for(var x=0;x<w;x++){l=1;
-				j=parseInt(x+(x/2+m.x/2-x)*t)
-				k=parseInt(y+(y/2+m.y/2-y)*t)
-				j=j<0?(l=0.5,0):j;j=j<w-1?j:(l=0.5,w-1);
-				k=k<0?(l=0.5,0):k;k=k<h-1?k:(l=0.5,h-1);
-		  		idx=j*4+k*4*w;
-		  		d[i++]=e[idx+0];
-		  		d[i++]=e[idx+1];
-		  		d[i++]=e[idx+2];
-		  		d[i++]=e[idx+3]*l;
-		  	}
-		  }
-		  if(renderstat.tv==renderstat.tf){
-			renderstat.tc();
-		  }else{
-			ctx.putImageData(sct,0,0)
-		  requestAnimationFrame(transition);}
+		  
+		  var t=2**t
+		  ctx.setTransform(t,0,0,t,-(t-1)*m.x,-(t-1)*m.y);
+		  Promise.resolve(createImageBitmap(scr)
+		  ).then(_=>{ctx.drawImage(_, 0, 0)});
+		    requestAnimationFrame(transition);
+		  if(renderstat.tv==renderstat.tf)
+			renderstat.r=-2
 		}
 	  
 	  
@@ -204,25 +217,26 @@
                     magnify+=magnify;
 				    renderstat.tv=0;
 					renderstat.tf=1;
-					renderstat.ts=0.25;
+					renderstat.ts=0.125;
 					renderstat.tc=aftertransition;
 					renderstat.r=-1;
 					renderstat.m=m;
 				    requestAnimationFrame(transition);
 					zoomhighlight();
-					applytcanv();
+					applytcanv(sct,scr);
 					break;
 				  case 2:
 				    realval-=(m.x-w/2)/magnify;
 				    imagval-=(h/2-m.y)/magnify;
 				    magnify/=2;
 					renderstat.tv=0;
-					renderstat.tf=-2;
-					renderstat.ts=-0.5;
+					renderstat.tf=-1;
+					renderstat.ts=-0.125;
 					renderstat.tc=aftertransition;
 					renderstat.r=-1;
 					renderstat.m=m;
 				    requestAnimationFrame(transition);
+					ctx.putImageData(scr,0,0);
 					break;
 				}
 		}
@@ -244,16 +258,17 @@
           for(var y=0;y<h;y++){ j = 0;
             if(abs(y-m.y/2-h/4)<sct.height/4){
               for(var x=0;x<w;x++){
-                d[i]=e[i++];
-                d[i]=e[i++];
-                d[i]=e[i++];
-                d[i++]=abs(x-m.x/2-w/4)<sct.width/4?255:128;
+			    let a=abs(x-m.x/2-w/4)<sct.width/4?1:0.5;
+                d[i]=e[i++]*a;
+                d[i]=e[i++]*a;
+                d[i]=e[i++]*a;
+                d[i++]=255;
             }}else{
               for(var x=0;x<w;x++){
-                d[i]=e[i++];
-                d[i]=e[i++];
-                d[i]=e[i++];
-                d[i++]=128;
+                d[i]=e[i++]*0.5;
+                d[i]=e[i++]*0.5;
+                d[i]=e[i++]*0.5;
+                d[i++]=255;
               }
             }
           }
