@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+  <html>
+	<head><meta charset="utf-8"/><title>Simple JavaScript Mandelbrot</title></head>
+    <body oncontextmenu="return false;">
+	  <center>
+	    <b>Left/right click to zoom in/out</b><br />
+        <canvas id="canv" width="512" height="512"></canvas><br />
+	    <b>Real:</b><input class="parameter" name="realparam" type="text" onchange="setvalue(0,0)"/>
+	    <b>Imag:</b><input class="parameter" name="imagparam" type="text" onchange="setvalue(0,1)"/><br />
+		<b>JXsd:</b><input class="parameter" name="jxsdparam" type="text" onchange="setvalue(1,0)"/>
+	    <b>JYsd:</b><input class="parameter" name="jysdparam" type="text" onchange="setvalue(1,1)"/><br />
+	    <b>Magn:</b><input class="parameter" name="magnparam" type="text" onchange="setvalue(2,0)"/>
+		<b>Iter:</b><input class="parameter" name="iterparam" type="text" onchange="setvalue(3,0)"/><br />
+		<input class="parameter" name="julyparam" type="checkbox" onchange="setvalue(4,0)"/><b>Use Julia </b>
+		<button id="applyparam" type="button" onmouseup="resetparam();applyparam();draw();">Reset Parameters</button>
+		<button id="applyparam" type="button" onmouseup="applyparam();draw();">Apply Parameters</button>
+		<span></span>
+	  </center>
+    </body>
+	<style>
+	  body {font-family: monospace; background-color:black}
+	  b { color: white }
+	  .parameter { background-color : #222222; color : #AAAAAA;}
+	  input  { font-family: monospace; }
+	  button { font-family: monospace; }
+	</style>
+	<script>
+      function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top,
+		  c: evt.buttons
+        };
+      }
+	  
+	</script>
+	
+    <script>
+      var iter=(oX,oY)=>{ var i;mI=maxiter
+        if(!enjulia){var k=oX,l=oY}else{var k=jxsdval,l=jysdval}
+        for(i=0,j=mI,m=oX,n=oY,sX=m*m,sY=n*n;i<j;i++) {
+          if(sX+sY>=4) return i;n*=m;n+=n+l;m=sX-sY+k;
+      	sX=m*m;sY=n*n;} return i; }
+		
+	  var render =_=>{
+	    if(renderstat.r<0){return}
+	    var k=renderstat; now=Date.now()
+		var d=scr.data,w=cvw/2,h=cvh/2,it,i=k.i;
+		var cX=realval,cY=imagval,sc=magnify;
+		
+		for(var y=k.y,yF=k.yF;y>yF;y--){
+		  for(var x=0-w,xF=0+w;x<xF;x++){
+		  	it=16*iter(cX+x/sc,cY+y/sc)**0.5;
+		  	it=it%512<256?it%256:255-it%256
+		  	d[i++]=it;
+		  	d[i++]=it;
+		  	d[i++]=it;
+		  	d[i++]=255
+		  }
+		  if(Date.now()-now>15){
+			if(y>yF){
+			  renderstat.y=--y;renderstat.i=i;now+=50;
+			  requestAnimationFrame(render);
+			  renderstat.r++
+				for(var x=0-w,xF=0+w;x<xF;x++){
+					d[i++]=x+y&1?255:0;
+					d[i++]=x+y&1?255:0;
+					d[i++]=x+y&1?255:0;
+					d[i++]=255
+				}
+			}else{
+		      renderstat.r =0;
+			}
+			//zoomhighlight();
+			ctx.putImageData(scr,0,0)
+			return;
+		  }
+		}
+		//zoomhighlight();
+		ctx.putImageData(scr,0,0)
+		renderstat.r =0;
+	  }
+	  
+	  
+      var fractal =_=> {
+	    renderstat.i =0;
+	    renderstat.y =0+cvh/2;
+		renderstat.yF=0-cvh/2;
+		if(!(renderstat.r>0)){
+	      renderstat.r =1;
+		  render();
+		}
+	  }
+	  
+	  var inv=document.getElementsByTagName("span")[0]
+      var canvas=document.getElementById("canv");
+	  var ctx=canvas.getContext("2d");
+	  var cvw=canvas.width, cvh=canv.height;
+	  var scr=ctx.createImageData(cvw,cvh);
+	  var sct=ctx.createImageData(cvw,cvh);
+	  var mousepos;
+	  var maxiter=10000;
+	  var magnify=4e9;
+	  var realval=-1.768548080064431;
+	  var imagval=0.000940337727537;
+	  var jxsdval=-0.75;
+	  var jysdval=0.125;
+	  var renderstat={};
+	  var enjulia=false;
+	  var now;
+    </script>
+	<script>
+	  var realparam = document.getElementsByName("realparam")[0]
+	  var imagparam = document.getElementsByName("imagparam")[0]
+	  var magnparam = document.getElementsByName("magnparam")[0]
+	  var iterparam = document.getElementsByName("iterparam")[0]
+	  var jxsdparam = document.getElementsByName("jxsdparam")[0]
+	  var jysdparam = document.getElementsByName("jysdparam")[0]
+	  var julyparam = document.getElementsByName("julyparam")[0]
+	  
+	  var updateparam =_=> {
+	    realparam.value=realval;
+	    imagparam.value=imagval;
+	    magnparam.value=magnify;
+	    iterparam.value=maxiter;
+        jxsdparam.value=jxsdval;
+	    jysdparam.value=jysdval;
+		julyparam.checked=enjulia; }
+		
+      var applyparam =_=> {
+	    realval=parseFloat(realparam.value);
+	    imagval=parseFloat(imagparam.value);
+	    magnify=parseFloat(magnparam.value);
+	    maxiter=parseInt(iterparam.value);
+        jxsdval=parseFloat(jxsdparam.value);
+	    jysdval=parseFloat(jysdparam.value);
+		enjulia=Boolean(julyparam.checked); }
+		
+      var resetparam =_=> {
+		realparam.value=  0;
+		imagparam.value=  0;
+		magnparam.value=128;
+	    iterparam.value=256;
+		jxsdparam.value=-0.75;
+		jysdparam.value=0.125;
+	  }
+	  
+	  var setvalue =_=>0
+	  
+	  var applytcanv=_=>{
+	    var d = sct.data, e = scr.data;
+	    for(var i=0,j=e.length;i<j;){
+	      e[i]=d[i++];e[i]=d[i++];e[i]=d[i++];e[i]=d[i++]
+	    }
+	  }
+	  
+	  var aftertransition =_=>(applytcanv(),updateparam(),draw())
+	  var transition=_=>
+	  	{
+		  if(renderstat.r>0){return}
+		  renderstat.tv+=renderstat.ts
+		  var i = 0, j = 0, k = 0, idx;
+		  var m = renderstat.m;
+		  var t = renderstat.tv;
+		  var d = sct.data, e = scr.data;
+		  var w = sct.width, h = sct.height;
+		  for(var y=0;y<h;y++){
+		  	for(var x=0;x<w;x++){
+				j=parseInt(x+(x/2+m.x/2-x)*t)
+				k=parseInt(y+(y/2+m.y/2-y)*t)
+		  		idx=(j%w)*4+(k%h)*4*w;
+		  		d[i++]=e[idx+0];
+		  		d[i++]=e[idx+1];
+		  		d[i++]=e[idx+2];
+		  		d[i++]=e[idx+3];
+		  	}
+		  }
+		  if(renderstat.tv==renderstat.tf){
+			renderstat.tc();
+		  }else{
+			ctx.putImageData(sct,0,0)
+		  requestAnimationFrame(transition);}
+		}
+	  
+	  
+	  var onMouseUp =_=>//mouseClick=true;
+	  {
+	        if(renderstat.r<0)return
+			console.log(mousepos)
+			var m = mousepos;
+			var w = sct.width, h = sct.height;
+			var half = m.x>=0&&m.y>=0&&m.x<w&&m.y<h?128:256;
+			
+			if(m.x>=0&&m.y>=0&&m.x<w&&m.y<h){
+				
+				switch(m.c){
+				  case 0:
+				  case 1:
+                    realval+=(m.x-w/2)/magnify/2;
+                    imagval+=(h/2-m.y)/magnify/2;
+                    magnify+=magnify;
+				    renderstat.tv=0;
+					renderstat.tf=1;
+					renderstat.ts=0.25;
+					renderstat.tc=aftertransition;
+					renderstat.r=-1;
+					renderstat.m=m;
+				    requestAnimationFrame(transition);
+					zoomhighlight();
+					applytcanv();
+					break;
+				  case 2:
+				    realval-=(m.x-w/2)/magnify;
+				    imagval-=(h/2-m.y)/magnify;
+				    magnify/=2;
+					renderstat.tv=0;
+					renderstat.tf=-2;
+					renderstat.ts=-0.5;
+					renderstat.tc=aftertransition;
+					renderstat.r=-1;
+					renderstat.m=m;
+				    requestAnimationFrame(transition);
+					break;
+				}
+		}
+	  }
+	  
+	  var onMouseDown =_=>mousepos = getMousePos(canvas,_);
+	  
+	  var abs=_=>_<0?-_:_;
+	  
+	  var zoomhighlight=_=>{
+		var m = mousepos;
+        var i = 0, j = 0;
+        var d = sct.data;
+        var e = scr.data;
+        var w = sct.width;
+        var h = sct.height;
+        var inside = m.x>=0&&m.y>=0&&m.x<w&&m.y<h;
+		if(inside){
+          for(var y=0;y<h;y++){ j = 0;
+            if(abs(y-m.y/2-h/4)<sct.height/4){
+              for(var x=0;x<w;x++){
+                d[i]=e[i++];
+                d[i]=e[i++];
+                d[i]=e[i++];
+                d[i++]=abs(x-m.x/2-w/4)<sct.width/4?255:128;
+            }}else{
+              for(var x=0;x<w;x++){
+                d[i]=e[i++];
+                d[i]=e[i++];
+                d[i]=e[i++];
+                d[i++]=128;
+              }
+            }
+          }
+          ctx.putImageData(sct,0,0)
+		}else{
+		  ctx.putImageData(scr,0,0)
+		}
+	  }
+	  
+	  var onMouseMove =_=>{
+	    mousepos = getMousePos(canvas,_);
+		if(!renderstat.r){
+			zoomhighlight()
+		}
+	  }
+	  
+	  inv.innerHTML+=atob("PGJyIC8+");
+	  inv.innerHTML+=atob("PGI+QnkgS291emVydSAvIE11aGFtbWFkIEhpZGF5YXQgQWwtQWtiYXI8L2I+");
+	  inv.innerHTML+=atob("PGJyIC8+");
+	  inv.innerHTML+=atob("PGI+U2ltcGxlIEphdmFTY3JpcHQgTWFuZGVsYnJvdDwvYj4=");
+	  var draw =_=>fractal(realval,imagval,magnify,canvas);
+	  
+	  document.addEventListener("mouseup", onMouseUp, false);
+	  document.addEventListener("mousedown", onMouseDown, false);
+	  document.addEventListener("mousemove", onMouseMove, false);
+	  
+	  mousepos={'x':-1,'y':-1,'c':0};updateparam();draw();
+	</script>
+  </html>
