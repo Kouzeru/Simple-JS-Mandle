@@ -254,41 +254,48 @@
 			updateparam();
 			draw();
 		}else{
-			if(m.x>=0&&m.y>=0&&m.x<w&&m.y<h){
-			    if(r.r<0){
-					r.ts+=(r.te-r.ts)*Math.sin(Math.PI*r.tt/2)**2
-					r.tt=0;
-					var t= 2**r.ts;
-					var x= r.m.x-(r.m.x)*t-r.n.x;
-					var y= r.m.y-(r.m.y)*t-r.n.y;
-					r.m.x= m.x/t-x/t;
-					r.m.y= m.y/t-y/t;
-					r.n.x= r.m.x-m.x;
-					r.n.y= r.m.y-m.y;
-					
-					switch(m.c){
-						case 0:
-						case 1: r.te++; break;
-						case 2: r.te--; break;
+			if(m.y<h&&m.y>=0){
+				if(r.r<0){
+					if(m.x>=0&&m.x<w){
+						r.ts+=(r.te-r.ts)*Math.sin(Math.PI*r.tt/2)**2
+						r.tt=0;
+						var t= 2**r.ts;
+						var x= r.m.x-(r.m.x)*t-r.n.x;
+						var y= r.m.y-(r.m.y)*t-r.n.y;
+						r.m.x= m.x/t-x/t;
+						r.m.y= m.y/t-y/t;
+						r.n.x= r.m.x-m.x;
+						r.n.y= r.m.y-m.y;
+						
+						switch(m.c){
+							case 0:
+							case 1: r.te++; break;
+							case 2: r.te--; break;
+						}
 					}
 				}else{
 					r.ts=0; // transition start
 					r.tv=2**-5; // timer velocity
 					r.tt=r.tv; // time
 					r.tc=aftertransition;
-					r.m=m;r.n=n;
 					r.n={'x':0,'y':0}
 					r.r=-1;
 					r.rv=realval;
 					r.iv=imagval;
 					r.mv=magnify;
 					ctx.putImageData(scr,0,0);
-					switch(m.c){
-						case 0:
-						case 1:
-							r.te= 1; break;
-						case 2:
-							r.te=-1; break;
+					if(m.x>=0&&m.x<w){
+					r.m=m;
+						switch(m.c){
+							case 0:
+							case 1:
+								r.te= 1; break;
+							case 2:
+								r.te=-1; break;
+						}
+					}else{
+						r.m={'x':w/2,'y':h/2};
+						r.te=-1;
 					}
 					Promise.resolve(createImageBitmap(canvas)).then(_=>(bmp=_,transition()));
 				}
