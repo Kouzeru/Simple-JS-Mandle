@@ -2,8 +2,9 @@
     <html>
     <head><meta charset="utf-8"/><title>Simple JavaScript Mandelbrot</title></head>
       <body oncontextmenu="return false;"><center>
-        <b style="text-shadow: 1px 1px black; position:fixed; display:block;">Left/right click to zoom in/out, drag to move.</b>
-		<div style="display:block;"><canvas id="canv" width="512" height="512"></canvas><br /></div>
+		<div><canvas id="canv" width="512" height="512"></canvas>
+	    <div style="position:fixed; left:50%; top:0" id="help"><b style="text-shadow: 1px 1px black; position:relative; left: -50%;">
+		Left/right click to zoom in/out, drag to move.</b></div></div>
 		<div style="text-shadow: 1px 1px black">
 				<b>Real:</b><input class="parameter" name="realparam" type="text" onchange="setvalue(0,1)"/>
 				<b>Imag:</b><input class="parameter" name="imagparam" type="text" onchange="setvalue(0,2)"/><br />
@@ -22,6 +23,8 @@
 	  .parameter { background-color : #222222; color : #AAAAAA;}
 	  input  { font-family: monospace; }
 	  button { font-family: monospace; }
+	  #help { opacity: 0; transition: 0.5s; }
+	  #canv:hover + #help { opacity: 1; }
 	</style>
 	<script>
       function getMousePos(canvas, evt) {
