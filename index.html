@@ -1,23 +1,20 @@
 <!DOCTYPE html>
     <html>
     <head><meta charset="utf-8"/><title>Simple JavaScript Mandelbrot</title></head>
-      <body oncontextmenu="return false;">
-        <b>Left/right click to zoom in/out, drag to move.</b><br />
-		<div style="position:absolute; display:block;"><canvas id="canv" width="512" height="512"></canvas><br /></div>
-		<div style="position:fixed; display:block; right:1px; text-shadow: 1px 1px black">
-		    <b>Main Parameters:</b><br />
-				<b>Real:</b><input class="parameter" name="realparam" type="text" onchange="setvalue(0,1)"/><br />
+      <body oncontextmenu="return false;"><center>
+        <b style="text-shadow: 1px 1px black; position:fixed; display:block;">Left/right click to zoom in/out, drag to move.</b>
+		<div style="display:block;"><canvas id="canv" width="512" height="512"></canvas><br /></div>
+		<div style="text-shadow: 1px 1px black">
+				<b>Real:</b><input class="parameter" name="realparam" type="text" onchange="setvalue(0,1)"/>
 				<b>Imag:</b><input class="parameter" name="imagparam" type="text" onchange="setvalue(0,2)"/><br />
-				<b>Magn:</b><input class="parameter" name="magnparam" type="text" onchange="setvalue(2,0)"/><br />
-				<b>Iter:</b><input class="parameter" name="iterparam" type="text" onchange="setvalue(3,0)"/><br /><br />
-			<button id="applyparam" type="button" onmouseup="resetparam();applyparam();draw();">Reset Parameters</button><br /><br />
-			<b>Julia Set Parameters:</b><br />
-				<b>JXsd:</b><input class="parameter" name="jxsdparam" type="text" onchange="setvalue(1,1)"/><br />
-				<b>JYsd:</b><input class="parameter" name="jysdparam" type="text" onchange="setvalue(1,2)"/><br />
-				<input class="parameter" name="julyparam" type="checkbox" onchange="setvalue(1,0)"/><b>Display Julia Set</b><br /><br />
+				<b>Magn:</b><input class="parameter" name="magnparam" type="text" onchange="setvalue(2,0)"/>
+				<b>Iter:</b><input class="parameter" name="iterparam" type="text" onchange="setvalue(3,0)"/><br />
+			<input class="parameter" name="julyparam" type="checkbox" onchange="setvalue(1,0)"/><b>Julia Set</b>
+			<button id="applyparam" type="button" onmouseup="resetparam();applyparam();draw();">Reset Parameters</button>
 			<button id="applyparam" type="button" onmouseup="applyparam();draw();">Apply Parameters</button><br />
-    	</div>
-    	<span style="position:fixed; bottom:1px"></span>
+				<b>JXsd:</b><input class="parameter" name="jxsdparam" type="text" onchange="setvalue(1,1)"/>
+				<b>JYsd:</b><input class="parameter" name="jysdparam" type="text" onchange="setvalue(1,2)"/>
+    	<span></span></div></center>
       </body>
     <style>
 	  body {font-family: monospace; background-color:black}
@@ -133,6 +130,7 @@
 	  var scr=ctx.createImageData(cvw,cvh); // recent
 	  var sct=ctx.createImageData(cvw,cvh); // temp
 	  var scb=ctx.createImageData(cvw,cvh); // black
+	  var bmp;
 	  for(var i=3,j=scb.data,k=j.length;i<k;i+=4)j[i]=254
 	  var mousepos, mousehld;
 	  var maxiter=2**12;
@@ -146,81 +144,97 @@
 	  var now;
     </script>
 	<script>
-	  var realparam = document.getElementsByName("realparam")[0]
-	  var imagparam = document.getElementsByName("imagparam")[0]
-	  var magnparam = document.getElementsByName("magnparam")[0]
-	  var iterparam = document.getElementsByName("iterparam")[0]
-	  var jxsdparam = document.getElementsByName("jxsdparam")[0]
-	  var jysdparam = document.getElementsByName("jysdparam")[0]
-	  var julyparam = document.getElementsByName("julyparam")[0]
-	  
-	  var updateparam =_=> {
-	    realparam.value=realval;
-	    imagparam.value=imagval;
-	    magnparam.value=magnify;
-	    iterparam.value=maxiter;
-        jxsdparam.value=jxsdval;
-	    jysdparam.value=jysdval;
-		julyparam.checked=enjulia; }
-		
-      var applyparam =_=> {
-	    realval=parseFloat(realparam.value);
-	    imagval=parseFloat(imagparam.value);
-	    magnify=parseFloat(magnparam.value);
-	    maxiter=parseInt(iterparam.value);
-        jxsdval=parseFloat(jxsdparam.value);
-	    jysdval=parseFloat(jysdparam.value);
-		enjulia=Boolean(julyparam.checked);
-		refresh();}
-		
-      var resetparam =_=> {
-		realparam.value=  0;
-		imagparam.value=  0;
-		magnparam.value=128;
-	    iterparam.value=256;
-		//jxsdparam.value=-0.75;
-		//jysdparam.value=0.125;
-	  }
-	  
-	  var setvalue =(_,$)=>{
-		switch(_){
-			case 1: applyparam(); refresh(); draw(); break;
-		}
-	  }
-	  
-	  var applytcanv=(_,$)=>{
-	    var d = _.data, e = $.data;
-	    for(var i=0,j=e.length;i<j;){
-	      e[i]=d[i++];e[i]=d[i++];e[i]=d[i++];e[i]=d[i++]
+	    var realparam = document.getElementsByName("realparam")[0]
+	    var imagparam = document.getElementsByName("imagparam")[0]
+	    var magnparam = document.getElementsByName("magnparam")[0]
+	    var iterparam = document.getElementsByName("iterparam")[0]
+	    var jxsdparam = document.getElementsByName("jxsdparam")[0]
+	    var jysdparam = document.getElementsByName("jysdparam")[0]
+	    var julyparam = document.getElementsByName("julyparam")[0]
+	    
+	    var updateparam =_=> {
+			realparam.value=realval;
+			imagparam.value=imagval;
+			magnparam.value=magnify;
+			iterparam.value=maxiter;
+			jxsdparam.value=jxsdval;
+			jysdparam.value=jysdval;
+			julyparam.checked=enjulia; }
+	  	
+        var applyparam =_=> {
+			realval=parseFloat(realparam.value);
+			imagval=parseFloat(imagparam.value);
+			magnify=parseFloat(magnparam.value);
+			maxiter=parseInt(iterparam.value);
+			jxsdval=parseFloat(jxsdparam.value);
+			jysdval=parseFloat(jysdparam.value);
+			enjulia=Boolean(julyparam.checked);
+			refresh();}
+	  	
+        var resetparam =_=> {
+			realparam.value=  0;
+			imagparam.value=  0;
+			magnparam.value=128;
+			iterparam.value=256;
 	    }
-	  }
-	  
-	  var aftertransition =_=>{
-		var m = renderstat.m;
-		var t = 2**renderstat.te;
-	    var d = sct.data, e = scr.data;
-		var w = sct.width, h = sct.height;
-		scr=null; scr=ctx.getImageData(0,0,w,h)
-		for(let i=3,j=scr.data,k=j.length;i<k;i+=4)j[i]=254;
-		updateparam();
-		draw();
-	  }
-	  var transition=_=>
-	  	{
-		  var r = renderstat, w = scr.width, h = scr.height;
-		  if(r.r> 0){ return }
-		  if(r.r<-1){ r.tc(); return }
-		  requestAnimationFrame(transition);
-		  
-		  r.tt+=r.tv
-		  if(r.tt>=1){ r.tt=1; r.r=-2; }
-		  var m = r.m, n = r.n
-		  var t = 2**(r.ts+(r.te-r.ts)*Math.sin(Math.PI*r.tt/2)**2);
-		  
-		  Promise.resolve(createImageBitmap(sct)).then(_=>{
-		  	ctx.fillStyle="#000000";ctx.fillRect(0,0,w,h)
-		    ctx.drawImage(_,n.x-(t-1)*(m.x+n.x),n.y-(t-1)*(m.y+n.y),t*w,t*h)});
-		}
+	    
+	    var setvalue =(_,$)=>{
+			switch(_){
+				case 1: applyparam(); refresh(); draw(); break;
+			}
+	    }
+	    
+	    var applytcanv=(_,$)=>{
+			var d = _.data, e = $.data;
+			for(var i=0,j=e.length;i<j;){
+				e[i]=d[i++];e[i]=d[i++];e[i]=d[i++];e[i]=d[i++]
+			}
+	    }
+	    
+	    var aftertransition =_=>{
+			var m = renderstat.m, n = renderstat.n
+			var t = 2**renderstat.te;
+			var d = sct.data, e = scr.data;
+			var w = sct.width, h = sct.height;
+			ctx.fillStyle="#000000";ctx.fillRect(0,0,w,h)
+			ctx.drawImage(bmp,m.x-(m.x)*t-n.x,m.y-(m.y)*t-n.y,t*w,t*h)
+			scr=null; scr=ctx.getImageData(0,0,w,h)
+			for(let i=3,j=scr.data,k=j.length;i<k;i+=4)j[i]=254;
+			updateparam();
+			draw();
+			
+			var r = renderstat; magnify =r.mv*t;
+	  	    realval =r.rv+(n.x/t+((m.x)-w/2)-((m.x)-w/2)/t)/r.mv;
+	  	    imagval =r.iv+((h/2-(m.y))-n.y/t-(h/2-(m.y))/t)/r.mv;
+			updateparam();
+			
+			
+	    }
+	    var transition=_=>
+	    	  {
+	  	      var r = renderstat, w = scr.width, h = scr.height;
+	  	      if(r.r> 0){ return }
+	  	      if(r.r<-1){ r.tc(); return }
+	  	      requestAnimationFrame(transition);
+	  	      
+	  	      r.tt+=r.tv
+	  	      if(r.tt>=1){ r.tt=1; r.r=-2; }
+	  	      var m = r.m, n = r.n;
+	  	      var t = 2**(r.ts+(r.te-r.ts)*Math.sin(Math.PI*r.tt/2)**2);
+	  	      
+	  	      ctx.fillStyle="#000000";
+			  ctx.fillRect(0,0,w,h);
+	  	      ctx.drawImage(bmp,m.x-(m.x)*t-n.x,m.y-(m.y)*t-n.y,t*w,t*h);
+	  	      ctx.globalAlpha=1-abs(r.tt);
+	  	      drawCrosses(r.m.x-r.n.x,r.m.y-r.n.y,2**r.te/t,w,h);
+	  	      ctx.globalAlpha=1;
+	  	      
+	  	      magnify =r.mv*t;
+	  	      realval =r.rv+(n.x/t+((m.x)-w/2)-((m.x)-w/2)/t)/r.mv;
+	  	      imagval =r.iv+((h/2-(m.y))-n.y/t-(h/2-(m.y))/t)/r.mv;
+			  updateparam();
+	  	    
+	  	  }
 	  
 	  
 	var onMouseUp =_=>//mouseClick=true;
@@ -230,39 +244,29 @@
 		var w = sct.width, h = sct.height;
 		if(r.move){
 		    r.move=false;
-		    realval+=(n.x-m.x)/magnify
-			imagval+=(m.y-n.y)/magnify
-			scr=null;scr=ctx.getImageData(0,0,w,h)
+		    realval+=(n.x-m.x)/magnify;
+			imagval+=(m.y-n.y)/magnify;
+			scr=null;scr=ctx.getImageData(0,0,w,h);
 			//for(let i=3,j=scr.data,k=j.length;i<k;i+=4)j[i]=254;
-			r.dx=m.x-n.x
-			r.dy=m.y-n.y
 			updateparam();
 			draw();
 		}else{
 			if(m.x>=0&&m.y>=0&&m.x<w&&m.y<h){
 			    if(r.r<0){
-					r.ts=r.ts+(r.te-r.ts)*Math.sin(Math.PI*r.tt/2)**2
+					r.ts+=(r.te-r.ts)*Math.sin(Math.PI*r.tt/2)**2
 					r.tt=0;
-					//r.n.x=(r.m.x)*(r.ts-1)
-					//r.n.y=(r.m.y)*(r.ts-1)
-					//r.m.x=w/2
-					//r.m.y=h/2
-					
+					var t= 2**r.ts;
+					var x= r.m.x-(r.m.x)*t-r.n.x;
+					var y= r.m.y-(r.m.y)*t-r.n.y;
+					r.m.x= m.x/t-x/t;
+					r.m.y= m.y/t-y/t;
+					r.n.x= r.m.x-m.x;
+					r.n.y= r.m.y-m.y;
 					
 					switch(m.c){
 						case 0:
-						case 1:
-							r.te++;
-							realval+=(r.m.x-w/2)/magnify/2;
-							imagval+=(h/2-r.m.y)/magnify/2;
-							magnify+=magnify;
-							break;
-						case 2:
-							r.te--
-							realval-=(r.m.x-w/2)/magnify;
-							imagval-=(h/2-r.m.y)/magnify;
-							magnify/=2;
-							break;
+						case 1: r.te++; break;
+						case 2: r.te--; break;
 					}
 				}else{
 					r.ts=0; // transition start
@@ -271,28 +275,19 @@
 					r.tc=aftertransition;
 					r.m=m;r.n=n;
 					r.n={'x':0,'y':0}
+					r.r=-1;
+					r.rv=realval;
+					r.iv=imagval;
+					r.mv=magnify;
+					ctx.putImageData(scr,0,0);
 					switch(m.c){
 						case 0:
 						case 1:
-							r.te=1; // transition end
-							r.r=-1;
-							requestAnimationFrame(transition);
-							zoomhighlight();
-							realval+=(m.x-w/2)/magnify/2;
-							imagval+=(h/2-m.y)/magnify/2;
-							magnify+=magnify;
-							break;
+							r.te= 1; break;
 						case 2:
-							r.te=-1; // transition end
-							r.r=-1;
-							requestAnimationFrame(transition);
-							ctx.putImageData(scr,0,0);
-							applytcanv(scr,sct);
-							realval-=(m.x-w/2)/magnify;
-							imagval-=(h/2-m.y)/magnify;
-							magnify/=2;
-							break;
+							r.te=-1; break;
 					}
+					Promise.resolve(createImageBitmap(canvas)).then(_=>(bmp=_,transition()));
 				}
 				updateparam()
 			}
@@ -305,37 +300,50 @@
 	  }
 	  
 	  var abs=_=>_<0?-_:_;
+
+	var	drawCrosses=(x,y,t,w,h)=>{
+			ctx.fillStyle="#00000080";
+			var a = x+(0-x)/t
+			var b = y+(0-y)/t
+			var c = x+(w-x)/t
+			var d = y+(h-y)/t
+			
+			ctx.beginPath();
+			ctx.rect(0,0,w,h);
+			ctx.rect(a,b,w/t,h/t);
+			ctx.fill("evenodd");
+			
+			ctx.strokeStyle="#FFFFFF";
+			ctx.beginPath();
+			ctx.moveTo(0,0);
+			ctx.lineTo(x,y);
+			ctx.lineTo(w,h);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.moveTo(w,0);
+			ctx.lineTo(x,y);
+			ctx.lineTo(0,h);
+			ctx.stroke();
+			
+			ctx.fillStyle="#FFFFFF";
+			ctx.fillRect(a-4,b-1,8,2);ctx.fillRect(a-1,b-4,2,8);
+			ctx.fillRect(a-4,d-1,8,2);ctx.fillRect(a-1,d-4,2,8);
+			ctx.fillRect(c-4,b-1,8,2);ctx.fillRect(c-1,b-4,2,8);
+			ctx.fillRect(c-4,d-1,8,2);ctx.fillRect(c-1,d-4,2,8);
+			ctx.fillRect(0-4,0-1,8,2);ctx.fillRect(0-1,0-4,2,8);
+			ctx.fillRect(0-4,h-1,8,2);ctx.fillRect(0-1,h-4,2,8);
+			ctx.fillRect(w-4,0-1,8,2);ctx.fillRect(w-1,0-4,2,8);
+			ctx.fillRect(w-4,h-1,8,2);ctx.fillRect(w-1,h-4,2,8);
+			ctx.fillRect(x-4,y-1,8,2);ctx.fillRect(x-1,y-4,2,8);
+		}
 	  
-	  var zoomhighlight=_=>{
+	var zoomhighlight=_=>{
 		var m = mousepos;
         var i = 0, j = 0;
-        var d = sct.data;
-        var e = scr.data;
-        var w = sct.width;
-        var h = sct.height;
-		if(m.x>=0&&m.y>=0&&m.x<w&&m.y<h){
-          for(var y=0;y<h;y++){ j = 0;
-            if(abs(y-m.y/2-h/4)<sct.height/4){
-              for(var x=0;x<w;x++){
-			    let a=abs(x-m.x/2-w/4)<sct.width/4?1:0.5;
-                d[i]=e[i++]//*a;
-                d[i]=e[i++]//*a;
-                d[i]=e[i++]//*a;
-                d[i++]=254*a;
-            }}else{
-              for(var x=0;x<w;x++){
-                d[i]=e[i++]//*0.5;
-                d[i]=e[i++]//*0.5;
-                d[i]=e[i++]//*0.5;
-                d[i++]=254*0.5;
-              }
-            }
-          }
-          ctx.putImageData(sct,0,0)
-		}else{
-		  ctx.putImageData(scr,0,0)
-		}
-	  }
+	    ctx.putImageData(scr,0,0)
+		if(m.x>=0&&m.y>=0&&m.x<cvw&&m.y<cvh)
+			drawCrosses(m.x,m.y,2,cvw,cvh)
+	}
 	  
 	  var drawtranslatedcanvas=_=>{
 	    var m = mousepos; 
