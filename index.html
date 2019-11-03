@@ -39,11 +39,16 @@
 	</script>
 	
     <script>
-      var iter=(oX,oY)=>{ var i;mI=maxiter
-        if(!enjulia){var k=oX,l=oY}else{var k=jxsdval,l=jysdval}
-        for(i=1,j=mI,m=oX,n=oY,sX=m*m,sY=n*n;i<j;i++) {
-          if(sX+sY>=4) return i;n*=m;n+=n+l;m=sX-sY+k;
-      	sX=m*m;sY=n*n;} return i; }
+		var ln=_=>Math.log2(_)/Math.LOG2E;
+		var BO =     16;
+		var BP =  BO**2;
+		var BL = ln(BO);
+        var iter=(oX,oY)=>{
+            if(!enjulia){var k=oX,l=oY}else{var k=jxsdval,l=jysdval}
+            for(var i=1,j=maxiter,m=oX,n=oY,sX=m*m,sY=n*n;i<j;i++) {
+                if(sX+sY>=BP)break;n*=m;n+=n+l;m=sX-sY+k;sX=m*m;sY=n*n;}
+	  	    return{'i':i,'x':m,'y':n,'rr':sX+sY}; }
+			
 		
 	  var render =_=>{
 	    if(renderstat.r<0){return}
@@ -56,7 +61,7 @@
 		    if(i!=j){
 				if(d[i+3]<255){
 					IT=iter(cX+x/sc,cY+y/sc)
-					it=64*IT**0.5;
+					it=64*(IT.i+1+(ln(BO/ln(IT.rr)/2)/Math.LN2))**0.5
 					it=it%512<256?it%256:255-it%256
 					d[i++]=it;
 					d[i++]=it;
@@ -69,7 +74,7 @@
 			if(j>=0)
 				if(d[j+3]<255){
 					IT=iter(cX+x/sc,cY+y/sc)
-					it=64*IT**0.5;
+					it=64*(IT.i+1+(ln(BO/ln(IT.rr)/2)/Math.LN2))**0.5
 					it=it%512<256?it%256:255-it%256
 					d[j++]=it;
 					d[j++]=it;
@@ -199,10 +204,15 @@
 			var t = 2**renderstat.te;
 			var d = sct.data, e = scr.data;
 			var w = sct.width, h = sct.height;
-			ctx.fillStyle="#000000";ctx.fillRect(0,0,w,h)
-			ctx.drawImage(bmp,m.x-(m.x)*t-n.x,m.y-(m.y)*t-n.y,t*w,t*h)
-			scr=null; scr=ctx.getImageData(0,0,w,h)
-			for(let i=3,j=scr.data,k=j.length;i<k;i+=4)j[i]=254;
+			ctx.putImageData(scb,0,0);
+			if(t!=1||n.x-parseInt(n.x)!=0||n.y-parseInt(n.y)!=0){
+				ctx.drawImage(bmp,m.x-(m.x)*t-n.x-(t-1)/2,m.y-(m.y)*t-n.y-(t-1)/2,t*w,t*h)
+				scr=null; scr=ctx.getImageData(0,0,w,h)
+				for(let i=3,j=scr.data,k=j.length;i<k;i+=4)j[i]=254;
+			}else{
+				ctx.putImageData(scr,-n.x,-n.y);
+				scr=null;scr=ctx.getImageData(0,0,w,h);
+			}
 			updateparam();
 			draw();
 			
@@ -227,7 +237,7 @@
 	  	      
 	  	      ctx.fillStyle="#000000";
 			  ctx.fillRect(0,0,w,h);
-	  	      ctx.drawImage(bmp,m.x-(m.x)*t-n.x,m.y-(m.y)*t-n.y,t*w,t*h);
+	  	      ctx.drawImage(bmp,m.x-(m.x)*t-n.x-(t-1)/2,m.y-(m.y)*t-n.y-(t-1)/2,t*w,t*h);
 	  	      ctx.globalAlpha=1-abs(r.tt);
 	  	      drawCrosses(r.m.x-r.n.x,r.m.y-r.n.y,2**r.te/t,w,h);
 	  	      ctx.globalAlpha=1;
@@ -271,6 +281,10 @@
 							case 0:
 							case 1: r.te++; break;
 							case 2: r.te--; break;
+						}
+						if(r.te==0){
+							r.n.x=parseInt(r.n.x)
+							r.n.y=parseInt(r.n.y)
 						}
 					}
 				}else{
